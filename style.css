@@ -1,0 +1,45 @@
+/* Shared styling for the SNG Designs site. Mirrors the app's Ceramic palette. */
+:root {
+  --background-top: #FDF4E3;
+  --background-bottom: #EFD8B8;
+  --ink: #2C1D0F;
+  --body: #3B2917;
+  --muted: #6B5334;
+  --accent: #C25714;
+  --card: rgba(255, 252, 240, 0.88);
+  --border: rgba(115, 77, 41, 0.28);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 40px 20px 72px;
+  background: linear-gradient(var(--background-top), var(--background-bottom));
+  background-attachment: fixed;
+  color: var(--ink);
+  font: 16px/1.65 -apple-system, "SF Pro Text", system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+main { max-width: 680px; margin: 0 auto; }
+a { color: var(--accent); }
+a.home {
+  display: inline-flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--ink);
+  font-weight: 800; letter-spacing: 0.4px; margin-bottom: 28px;
+}
+.mark { display: block; }
+h1 { font-size: 30px; letter-spacing: -0.3px; margin: 0 0 6px; }
+h2 { font-size: 20px; margin: 34px 0 10px; }
+h3 { font-size: 17px; margin: 26px 0 8px; }
+p, li { color: var(--body); }
+ul { padding-left: 22px; }
+li { margin-bottom: 7px; }
+.subtitle { color: var(--muted); font-size: 14px; margin: 0 0 22px; }
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 20px; margin: 26px 0;
+}
+.lede { font-size: 18px; }
+footer {
+  margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 18px; font-size: 14px;
+}

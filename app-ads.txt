@@ -1,0 +1,3 @@
+# app-ads.txt - One Stick: Math Challenge (SNG Designs)
+# Authorized sellers for app inventory, per the IAB Tech Lab app-ads.txt spec.
+google.com, pub-5224839487665895, DIRECT, f08c47fec0942fa0
