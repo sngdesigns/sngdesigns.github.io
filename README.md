@@ -73,6 +73,18 @@ App Store Connect → **App Information**:
 AdMob: **Apps → app-ads.txt → Check for updates**. AdMob also has to read the public
 App Store listing, so verification only completes once the app is live.
 
+## What is on the site
+
+| Path | What it is |
+| --- | --- |
+| `/` | The landing page every promotional channel links to: App Store button, the 15-second preview clip, today's Daily Challenge, screenshots, feature list, legal links |
+| `/privacy/`, `/support/` | Required by App Store Connect, linked from the live listing — never move these paths |
+| `/app-ads.txt` | The AdMob crawler record. It must stay at the host **root** |
+| `/preview.mp4` | The 15-second onboarding clip, copied from the app's App Store preview |
+| `/daily-puzzles.json` | The puzzle catalog with `solutions` stripped. Today's puzzle is resolved in the browser from the same epoch formula the app uses, so the Daily Challenge card never goes stale |
+| `/og.png` | 1200 × 630 link preview image for X, Facebook, iMessage and Slack |
+| `/shots/*.jpg`, `/icon.png` | Web-sized copies of the app's screenshots and icon |
+
 ## Regenerate
 
 This folder is generated from the game repository:
@@ -81,4 +93,24 @@ This folder is generated from the game repository:
 python3 Scripts/build_github_pages.py
 ```
 
-Sources: `app-ads.txt` (repository root), `PrivacyPolicy.md`, `support/Support.md`.
+Sources: `app-ads.txt` (repository root), `PrivacyPolicy.md`, `support/Support.md`,
+`OneStickMathChallenge/Models/Puzzles.swift`, plus the screenshots and preview clip
+under `AppStoreScreenshots/` and `AppStorePreviews/` (both git-ignored in the game
+repository, so those assets only exist on the machine that captured them — the site
+still builds without them and simply drops the blocks that need them).
+
+## Publish an update
+
+Regenerating rewrites the folder but never its `.git`, so publishing is two steps:
+
+```bash
+cd sngdesigns.github.io
+git add -A
+git status          # check nothing else was swept in
+git commit -m "Update landing page"
+git push
+```
+
+Allow a minute for Pages to rebuild, then confirm the page and the crawler record
+still answer at `https://sngdesigns.github.io/` and
+`https://sngdesigns.github.io/app-ads.txt`.

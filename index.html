@@ -3,29 +3,111 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title></title>
+<title>One Stick — matchstick math puzzle for iPhone and iPad</title>
 <link rel="stylesheet" href="./style.css">
+<meta name="description" content="Move one matchstick to fix the equation. 500 handmade puzzles, a new Daily Challenge every day, hints and a scratch pad when you need them, and no account to create. Free for iPhone and iPad.">
+<meta name="theme-color" content="#FDF4E3">
+<link rel="canonical" href="https://sngdesigns.github.io/">
+<link rel="icon" href="icon.png" sizes="180x180">
+<link rel="apple-touch-icon" href="icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="One Stick: Math Challenge">
+<meta property="og:title" content="One Stick — matchstick math puzzle for iPhone and iPad">
+<meta property="og:description" content="Move one matchstick to fix the equation. 500 handmade puzzles, a new Daily Challenge every day, hints and a scratch pad when you need them, and no account to create. Free for iPhone and iPad.">
+<meta property="og:url" content="https://sngdesigns.github.io/">
+<meta property="og:image" content="https://sngdesigns.github.io/og.png">
+<meta name="twitter:card" content="summary_large_image">
 </head>
 <body>
 <main>
   <a class="home" href="./"><svg class="mark" viewBox="140 385 744 181" height="44" role="img" aria-label="One Stick: Math Challenge brand mark"><defs><linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4B5A7"/><stop offset="1" stop-color="#B29E8C"/></linearGradient><linearGradient id="flame" x1="408" y1="0" x2="616" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#D6542A"/><stop offset="1" stop-color="#E07C5C"/></linearGradient></defs><rect x="140" y="478" width="224" height="68" rx="34" fill="url(#wood)"/><rect x="660" y="478" width="224" height="68" rx="34" fill="url(#wood)"/><rect x="406" y="487" width="224" height="78" rx="30" fill="url(#wood)"/><polygon points="442.1,385.0 415.1,396.0 408.0,412.0 408.0,428.0 415.9,444.0 445.0,460.0 478.1,476.0 494.9,487.0 616.0,487.0 613.9,476.0 602.1,460.0 571.1,444.0 539.0,428.0 506.0,412.0 473.1,396.0" fill="url(#flame)"/></svg><span>One Stick: Math Challenge</span></a>
   
-  <p class="subtitle">Independent iOS app studio</p>
-  <p class="lede">One Stick: Math Challenge is a single-player puzzle game for
-  iPhone and iPad. Move one matchstick to fix the equation.</p>
+<section class="hero">
+  <p class="eyebrow">Matchstick puzzle · iPhone and iPad</p>
+  <h1 class="hero-title">One Stick</h1>
+  <p class="tagline">move one stick - fix the equation</p>
+  <p class="lede">Every equation starts out wrong by exactly one matchstick. Slide the
+  right stick and it becomes true. 500 handmade puzzles, a new Daily Challenge every
+  day, and no account to create.</p>
+  <p><a class="button" href="https://apps.apple.com/app/id6807222681">Download on the App Store</a></p>
+  <p class="meta">Free · iPhone and iPad · plays offline · Game Center optional</p>
+</section>
 
-  <div class="card">
-    <h2>Legal and help</h2>
-    <ul>
-      <li><a href="privacy/">Privacy Policy</a></li>
-      <li><a href="support/">Support</a></li>
-      <li><a href="mailto:onesticksupport@gmail.com">onesticksupport@gmail.com</a></li>
-    </ul>
+<section class="preview">
+  <div class="phone">
+    <video src="preview.mp4" poster="preview-poster.jpg" muted loop autoplay playsinline preload="metadata"
+      aria-label="Fifteen seconds of the real game: the first-launch lesson, one guided move, and a solved equation"></video>
   </div>
+  <p class="caption">Fifteen seconds of the real game — first launch, one guided move, solved.
+  <a href="preview.mp4">Play with sound</a>.</p>
+</section>
 
-  <p>This site also serves the game's <a href="app-ads.txt">app-ads.txt</a>, which lists the
-  advertising systems authorized to sell the app's ad inventory.</p>
+<section class="shots">
+  <img src="shots/01-home.jpg" alt="The home screen with the Daily Challenge card" loading="lazy">
+  <img src="shots/02-puzzle.jpg" alt="An Easy puzzle in Focus Mode" loading="lazy">
+  <img src="shots/03-solved.jpg" alt="The solved sheet with the score breakdown" loading="lazy">
+</section>
 
+<section class="card daily hidden" id="daily">
+  <p class="eyebrow">Today's Daily Challenge</p>
+  <p class="daily-equation" id="daily-equation">…</p>
+  <p><span class="chip" id="daily-difficulty">…</span>
+  <span class="note" id="daily-moves"></span></p>
+  <p>Everyone gets the same puzzle, and it changes at midnight. Beat it to keep your
+  streak alive — every consecutive day adds a bigger bonus.</p>
+  <p><a class="button small" href="https://apps.apple.com/app/id6807222681">Solve it in the app</a></p>
+</section>
+<script>
+(function () {
+  var now = new Date();
+  var days = Math.round(
+    (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(2026, 0, 1))
+    / 86400000);
+  fetch('daily-puzzles.json').then(function (r) { return r.json(); }).then(function (pool) {
+    if (!pool || !pool.length) return;
+    var puzzle = pool[((days % pool.length) + pool.length) % pool.length];
+    var chip = document.getElementById('daily-difficulty');
+    document.getElementById('daily-equation').textContent = puzzle.equation;
+    document.getElementById('daily-moves').textContent =
+      'Move ' + puzzle.moves + (puzzle.moves === 1 ? ' stick' : ' sticks') + ' to fix it';
+    chip.textContent = puzzle.difficulty;
+    chip.style.background = {'easy':'#1E7B3C','medium':'#C25714','hard':'#B8211A','expert':'#40268C','master':'#7340A6'}[puzzle.difficulty] || chip.style.background;
+    document.getElementById('daily').className = 'card daily';
+  }).catch(function () {});
+})();
+</script>
+
+<section class="card">
+  <h2>How it plays</h2>
+  <ol class="how">
+    <li><strong>Tap</strong> the matchstick that's in the wrong place — it lifts and glows.</li>
+    <li><strong>Drop</strong> it in the empty slot to make the equation true.</li>
+    <li><strong>Score</strong> points for the difficulty, the time you had left, and your streak.</li>
+  </ol>
+</section>
+
+<section class="card">
+  <h2>What's inside</h2>
+  <ul>
+    <li>500 puzzles across five difficulties, Easy through Master</li>
+    <li>A new Daily Challenge every day, with a streak bonus</li>
+    <li>Hints when you're stuck, and a scratch pad to work it out on</li>
+    <li>Badges, stick styles and digit styles to unlock with the Sticks you earn</li>
+    <li>Game Center leaderboards and achievements</li>
+    <li>No account, no sign-in, and it plays offline</li>
+  </ul>
+  <p class="note">One Stick is free and supported by ads. A one-time Remove Ads
+  purchase is optional.</p>
+</section>
+
+<section class="card">
+  <h2>Legal and help</h2>
+  <ul>
+    <li><a href="privacy/">Privacy Policy</a></li>
+    <li><a href="support/">Support</a></li>
+    <li><a href="mailto:onesticksupport@gmail.com">onesticksupport@gmail.com</a></li>
+  </ul>
+</section>
   <footer>
     <a href="./privacy/">Privacy Policy</a>
     <a href="./support/">Support</a>
