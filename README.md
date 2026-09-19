@@ -82,6 +82,7 @@ App Store listing, so verification only completes once the app is live.
 | `/app-ads.txt` | The AdMob crawler record. It must stay at the host **root** |
 | `/preview-<hash>.mp4` | The 15-second onboarding clip (bottom-third captions, spoken voiceover), copied from the app's App Store preview. The hash changes with the file, so a browser can never pair a republished page with a cached clip |
 | `/daily-puzzles.json` | The puzzle catalog with `solutions` stripped. Today's puzzle is resolved in the browser from the same epoch formula the app uses, so the Daily Challenge card never goes stale |
+| `/daily-solutions.json` | Answers for the last 30 days that have already been played, keyed by day number since the 2026-01-01 epoch. Never contains today or later, so the published site cannot spoil a daily |
 | `/og.png` | 1200 × 630 link preview image for X, Facebook, iMessage and Slack |
 | `/shots/*.jpg`, `/icon.png` | Web-sized copies of the app's screenshots and icon |
 
@@ -98,6 +99,27 @@ Sources: `app-ads.txt` (repository root), `PrivacyPolicy.md`, `support/Support.m
 under `AppStoreScreenshots/` and `AppStorePreviews/` (both git-ignored in the game
 repository, so those assets only exist on the machine that captured them — the site
 still builds without them and simply drops the blocks that need them).
+
+### The daily answers move on their own
+
+Today's Daily Challenge needs no help: the page works out `pool[today % count]`
+from the visitor's clock. Yesterday's answer cannot work that way — publishing
+future answers would spoil the daily — so the site carries the days that have
+already been played, and that file has to be rewritten once a day:
+
+```bash
+python3 Scripts/build_github_pages.py --answers-only [dir]   # daily-solutions.json only
+./Scripts/refresh_daily_answers.sh [--site dir] [--push]      # the same, then commit
+```
+
+Nothing else on the site is touched (the file is fetched at runtime), which is
+the point: a runner does not need the App Store media that only exists here.
+`.github/workflows/daily-answers.yml` runs it nightly at 12:00 UTC — the first
+hour at which the day that just ended has ended in every timezone — and
+`Scripts/refresh_daily_answers.sh` does the same from cron or launchd. Either
+way, if a day never gets published the card labels itself with the newest day it
+has (`Last daily solution · Sep 14`) and hides itself if there is nothing at all;
+it never shows a wrong puzzle.
 
 ## Publish an update
 

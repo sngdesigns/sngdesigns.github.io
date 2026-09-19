@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>One Stick — matchstick math puzzle for iPhone and iPad</title>
-<link rel="stylesheet" href="./style.css?v=4182dbaf68">
+<link rel="stylesheet" href="./style.css?v=b8392061d5">
 <meta name="description" content="Move one matchstick to fix the equation. 500 handmade puzzles, a new Daily Challenge every day, hints and a scratch pad when you need them, and no account to create. Free for iPhone and iPad.">
 <meta name="theme-color" content="#FDF4E3">
 <link rel="canonical" href="https://sngdesigns.github.io/">
@@ -100,6 +100,13 @@
   streak alive — every consecutive day adds a bigger bonus.</p>
   <p><a class="button small" href="https://apps.apple.com/app/id6807222681">Solve it in the app</a></p>
 </section>
+<section class="card solution hidden" id="solution">
+  <p class="eyebrow" id="solution-title">Yesterday's solution</p>
+  <div class="daily-board" id="solution-before"></div>
+  <div class="daily-board" id="solution-after"></div>
+  <p><span class="chip" id="solution-difficulty">…</span>
+  <span class="note" id="solution-note"></span></p>
+</section>
 <script>
 (function () {
   // The board, mirroring SegmentGeometry.swift and Digit.segmentMap: every
@@ -148,19 +155,29 @@
     return out;
   }
 
-  function board(equation, label) {
+  // opts.lit is the fill class for the sticks and opts.strike draws the
+  // fail-coloured bar the game puts through an equation it has beaten.
+  function board(equation, label, opts) {
+    opts = opts || {};
     var W = 100, gap = W * GAP, chars = equation.split('');
     var width = chars.length * W + (chars.length - 1) * gap;
     var parts = '', x = 0;
+    var litClass = opts.lit || 'lit';
     chars.forEach(function (ch) {
       cell(ch, W).forEach(function (p) {
         parts += '<rect x="' + (x + p[0]).toFixed(1) + '" y="' + p[1].toFixed(1) +
           '" width="' + p[2].toFixed(1) + '" height="' + p[3].toFixed(1) +
           '" rx="' + (W * THICK * RX).toFixed(1) + '" class="' +
-          (p[4] ? 'lit' : 'unlit') + '"/>';
+          (p[4] ? litClass : 'unlit') + '"/>';
       });
       x += W + gap;
     });
+    if (opts.strike) {
+      var bar = W * 0.055;
+      parts += '<rect class="strike" x="0" y="' + ((W * 2 - bar) / 2).toFixed(1) +
+        '" width="' + width.toFixed(1) + '" height="' + bar.toFixed(1) +
+        '" rx="' + (bar / 2).toFixed(1) + '"/>';
+    }
     return '<svg viewBox="0 0 ' + width + ' ' + (W * 2) + '" role="img" ' +
       'aria-label="' + label + '">' + parts + '</svg>';
   }
@@ -181,6 +198,48 @@
     chip.textContent = puzzle.difficulty;
     chip.style.background = {'easy':'#1E7B3C','medium':'#C25714','hard':'#B8211A','expert':'#40268C','master':'#7340A6'}[puzzle.difficulty] || chip.style.background;
     document.getElementById('daily').className = 'card daily';
+  }).catch(function () {});
+  // Yesterday's answer, from the day-by-day history the build wrote out. That file
+  // only carries days that had already passed when the site was generated, so
+  // today's answer is not on this page in any form. If the site is older than the
+  // day it is showing, the date in the title says so rather than claiming to be
+  // yesterday — and if the file has nothing to show, the card stays hidden.
+  fetch('daily-solutions.json').then(function (r) { return r.json(); }).then(function (data) {
+    if (!data || !data.days) return;
+    var history = data.days;
+    var yesterday = days - 1;
+    var chosen = history[yesterday] ? yesterday : null;
+    if (chosen === null) {
+      Object.keys(history).forEach(function (key) {
+        var day = parseInt(key, 10);
+        if (day <= yesterday && (chosen === null || day > chosen)) chosen = day;
+      });
+    }
+    if (chosen === null) return;
+    var entry = history[chosen];
+    var answer = (entry.solutions || [])[0];
+    if (!answer) return;
+    var when = new Date(2026, 0, 1);
+    when.setDate(when.getDate() + chosen);
+    var label = when.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    var moves = 'Solved in ' + entry.moves + (entry.moves === 1 ? ' move' : ' moves');
+    document.getElementById('solution-title').textContent =
+      (chosen === yesterday ? "Yesterday's solution" : 'Last daily solution') + ' · ' + label;
+    // Both boards are the game's own: the puzzle as it was dealt, struck through in
+    // the fail colour like the solved sheet does, then the answer in solved green.
+    document.getElementById('solution-before').innerHTML = board(
+      entry.equation,
+      entry.equation.split('').join(' ') + ' — the puzzle from ' + label + ', unsolved',
+      { strike: true });
+    document.getElementById('solution-after').innerHTML = board(
+      answer,
+      answer.split('').join(' ') + ' — the solved equation, ' + moves.toLowerCase(),
+      { lit: 'resolved' });
+    document.getElementById('solution-note').textContent = moves;
+    var chip = document.getElementById('solution-difficulty');
+    chip.textContent = entry.difficulty;
+    chip.style.background = {'easy':'#1E7B3C','medium':'#C25714','hard':'#B8211A','expert':'#40268C','master':'#7340A6'}[entry.difficulty] || chip.style.background;
+    document.getElementById('solution').className = 'card solution';
   }).catch(function () {});
 })();
 </script>
