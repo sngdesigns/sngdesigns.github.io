@@ -80,7 +80,7 @@ App Store listing, so verification only completes once the app is live.
 | `/` | The landing page every promotional channel links to: App Store button, the 15-second preview clip, today's Daily Challenge, screenshots, feature list, legal links |
 | `/privacy/`, `/support/` | Required by App Store Connect, linked from the live listing — never move these paths |
 | `/app-ads.txt` | The AdMob crawler record. It must stay at the host **root** |
-| `/preview.mp4` | The 15-second onboarding clip, copied from the app's App Store preview |
+| `/preview-<hash>.mp4` | The 15-second onboarding clip (bottom-third captions, spoken voiceover), copied from the app's App Store preview. The hash changes with the file, so a browser can never pair a republished page with a cached clip |
 | `/daily-puzzles.json` | The puzzle catalog with `solutions` stripped. Today's puzzle is resolved in the browser from the same epoch formula the app uses, so the Daily Challenge card never goes stale |
 | `/og.png` | 1200 × 630 link preview image for X, Facebook, iMessage and Slack |
 | `/shots/*.jpg`, `/icon.png` | Web-sized copies of the app's screenshots and icon |

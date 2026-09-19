@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>One Stick — matchstick math puzzle for iPhone and iPad</title>
-<link rel="stylesheet" href="./style.css?v=401cf687f5">
+<link rel="stylesheet" href="./style.css?v=4182dbaf68">
 <meta name="description" content="Move one matchstick to fix the equation. 500 handmade puzzles, a new Daily Challenge every day, hints and a scratch pad when you need them, and no account to create. Free for iPhone and iPad.">
 <meta name="theme-color" content="#FDF4E3">
 <link rel="canonical" href="https://sngdesigns.github.io/">
@@ -40,11 +40,18 @@
 
 <section class="preview">
   <div class="phone">
-    <video src="preview.mp4" poster="preview-poster.jpg" width="240" height="520" muted loop autoplay playsinline preload="metadata"
-      aria-label="Fifteen seconds of the real game: the first-launch lesson, one guided move, and a solved equation"></video>
+    <video src="preview-3d12c15082.mp4" poster="preview-poster-e6f0d81c77.jpg" width="240" height="520" muted loop autoplay playsinline preload="auto"
+      aria-label="Fifteen seconds of the real game with a spoken voiceover: the first-launch lesson, one guided move, and a solved equation"></video>
   </div>
-  <p class="caption">Fifteen seconds of the real game — first launch, one guided move, solved.
-  <a href="preview.mp4">Play with sound</a>.</p>
+  <p class="caption">Fifteen seconds of the real game — first launch, one guided move, solved.</p>
+  <button type="button" class="sound-toggle" aria-pressed="false" aria-label="Play the preview voiceover">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M11 5 6 9H3v6h3l5 4z"/>
+      <path class="waves" d="M15.5 8.5a5 5 0 0 1 0 7M18.5 6a9 9 0 0 1 0 12"/>
+    </svg>
+    <span class="sound-label">Sound on</span>
+  </button>
 </section>
 <script>
   // A muted autoplay loop can be paused for us — some webviews and Low Power Mode
@@ -58,6 +65,23 @@
     };
     video.addEventListener('pause', resume);
     document.addEventListener('visibilitychange', resume);
+
+    // Autoplay may only start silent, so the clip begins muted and the voiceover
+    // is one click away. The button is the gesture browsers require.
+    var toggle = document.querySelector('.sound-toggle');
+    if (!toggle) return;
+    var label = function () {
+      var on = !video.muted;
+      toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
+      toggle.querySelector('.sound-label').textContent = on ? 'Sound off' : 'Sound on';
+      toggle.querySelector('.waves').style.opacity = on ? '1' : '0.35';
+    };
+    toggle.addEventListener('click', function () {
+      video.muted = !video.muted;
+      if (video.paused) video.play().catch(function () {});
+      label();
+    });
+    label();
   })();
 </script>
 
