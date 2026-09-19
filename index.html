@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>One Stick — matchstick math puzzle for iPhone and iPad</title>
-<link rel="stylesheet" href="./style.css?v=a68f842313">
+<link rel="stylesheet" href="./style.css?v=401cf687f5">
 <meta name="description" content="Move one matchstick to fix the equation. 500 handmade puzzles, a new Daily Challenge every day, hints and a scratch pad when you need them, and no account to create. Free for iPhone and iPad.">
 <meta name="theme-color" content="#FDF4E3">
 <link rel="canonical" href="https://sngdesigns.github.io/">
@@ -20,12 +20,17 @@
 </head>
 <body>
 <main>
-  <a class="home" href="./"><svg class="mark" viewBox="140 385 744 181" height="44" role="img" aria-label="One Stick: Math Challenge brand mark"><defs><linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4B5A7"/><stop offset="1" stop-color="#B29E8C"/></linearGradient><linearGradient id="flame" x1="408" y1="0" x2="616" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#D6542A"/><stop offset="1" stop-color="#E07C5C"/></linearGradient></defs><rect x="140" y="478" width="224" height="68" rx="34" fill="url(#wood)"/><rect x="660" y="478" width="224" height="68" rx="34" fill="url(#wood)"/><rect x="406" y="487" width="224" height="78" rx="30" fill="url(#wood)"/><polygon points="442.1,385.0 415.1,396.0 408.0,412.0 408.0,428.0 415.9,444.0 445.0,460.0 478.1,476.0 494.9,487.0 616.0,487.0 613.9,476.0 602.1,460.0 571.1,444.0 539.0,428.0 506.0,412.0 473.1,396.0" fill="url(#flame)"/></svg><span>One Stick: Math Challenge</span></a>
+  
   
 <section class="hero">
-  <p class="eyebrow">Matchstick puzzle · iPhone and iPad</p>
-  <h1 class="hero-title">One Stick</h1>
-  <p class="tagline">move one stick - fix the equation</p>
+  <div class="lockup">
+    <svg class="mark" viewBox="0 0 688 179" height="32" role="presentation" aria-hidden="true"><defs><linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4B5A7"/><stop offset="1" stop-color="#B29E8C"/></linearGradient><linearGradient id="flame" x1="240" y1="0" x2="448" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#D6542A"/><stop offset="1" stop-color="#E07C5C"/></linearGradient></defs><rect x="0" y="55.5" width="224" height="68" rx="34" fill="url(#wood)"/><rect x="464" y="55.5" width="224" height="68" rx="34" fill="url(#wood)"/><rect x="232" y="101" width="224" height="78" rx="39" fill="url(#wood)"/><polygon points="274.1,0.0 247.1,11.1 240.0,27.3 240.0,43.5 247.9,59.5 277.0,75.7 310.1,91.9 326.9,103.0 448.0,103.0 445.9,91.9 434.1,75.7 403.1,59.5 371.0,43.5 338.0,27.3 305.1,11.1" fill="url(#flame)"/></svg>
+    <p class="lockup-top">One Stick</p>
+    <h1 class="lockup-main">Math Challenge</h1>
+    <p class="lockup-tag">Move one stick - fix the equation</p>
+    <span class="lockup-rule" aria-hidden="true"></span>
+    <p class="eyebrow">Matchstick puzzle · iPhone and iPad</p>
+  </div>
   <p class="lede">Every equation starts out wrong by exactly one matchstick. Slide the
   right stick and it becomes true. 500 handmade puzzles, a new Daily Challenge every
   day, and no account to create.</p>
@@ -41,6 +46,20 @@
   <p class="caption">Fifteen seconds of the real game — first launch, one guided move, solved.
   <a href="preview.mp4">Play with sound</a>.</p>
 </section>
+<script>
+  // A muted autoplay loop can be paused for us — some webviews and Low Power Mode
+  // stop it and never restart, leaving a frozen frame in the hero. Nothing else on
+  // the page can pause this clip (it has no controls), so resume whenever it stalls.
+  (function () {
+    var video = document.querySelector('.phone video');
+    if (!video) return;
+    var resume = function () {
+      if (!document.hidden && video.paused) video.play().catch(function () {});
+    };
+    video.addEventListener('pause', resume);
+    document.addEventListener('visibilitychange', resume);
+  })();
+</script>
 
 <section class="shots">
   <img src="shots/01-home.jpg" width="172" height="372" alt="The home screen with the Daily Challenge card" loading="lazy" decoding="async">
@@ -50,7 +69,7 @@
 
 <section class="card daily hidden" id="daily">
   <p class="eyebrow">Today's Daily Challenge</p>
-  <p class="daily-equation" id="daily-equation">…</p>
+  <div class="daily-board" id="daily-equation"></div>
   <p><span class="chip" id="daily-difficulty">…</span>
   <span class="note" id="daily-moves"></span></p>
   <p>Everyone gets the same puzzle, and it changes at midnight. Beat it to keep your
@@ -59,6 +78,69 @@
 </section>
 <script>
 (function () {
+  // The board, mirroring SegmentGeometry.swift and Digit.segmentMap: every
+  // coordinate derives from the cell width, so one number sizes the whole row.
+  var INSET = 0.05;      // SegmentGeometry.horizontalInsetRatio
+  var THICK = 0.2;       // SegmentGeometry.thicknessRatio
+  var GAP = 0.29;        // LayoutMetrics.equationCellSpacing / cell width
+  var RX = 0.32;         // SegmentStick.styleCornerRadius, .classic
+  // A=top, B=topRight, C=bottomRight, D=bottom, E=bottomLeft, F=topLeft, G=middle.
+  var LIT = {
+    '0': 'abcdef', '1': 'bc', '2': 'abdeg', '3': 'abcdg', '4': 'bcfg',
+    '5': 'acdfg', '6': 'acdefg', '7': 'abc', '8': 'abcdefg', '9': 'abcdfg'
+  };
+
+  function cell(ch, W) {
+    var H = W * 2, m = W * INSET, t = W * THICK, mid = H / 2 - t / 2;
+    var out = [];
+    function add(x, y, w, h, lit) { out.push([x, y, w, h, lit]); }
+    if (LIT[ch]) {
+      var slots = {
+        a: [m, m, W - 2 * m, t],
+        b: [W - m - t, m + t, t, mid - m - t],
+        c: [W - m - t, mid + t, t, H - m - t - mid - t],
+        d: [m, H - m - t, W - 2 * m, t],
+        e: [m, mid + t, t, H - m - t - mid - t],
+        f: [m, m + t, t, mid - m - t],
+        g: [m, mid, W - 2 * m, t]
+      };
+      'abcdefg'.split('').forEach(function (k) {
+        var r = slots[k];
+        add(r[0], r[1], r[2], r[3], LIT[ch].indexOf(k) >= 0);
+      });
+    } else if (ch === '=') {
+      // Locked: only the two bars, symmetric about the cell with a
+      // one-thickness gap — SegmentGeometry.equalsBarRects.
+      var top = (H - t * 3) / 2;
+      add(m, top, W - 2 * m, t, true);
+      add(m, top + t * 2, W - 2 * m, t, true);
+    } else {
+      // '+' and '-': the middle bar, plus the vertical only '+' lights. The
+      // vertical is the same length as the bar, so '+' reads as two equal sticks.
+      var len = W * (1 - 2 * INSET);
+      add(m, mid, W - 2 * m, t, true);
+      add((W - t) / 2, H / 2 - len / 2, t, len, ch === '+');
+    }
+    return out;
+  }
+
+  function board(equation, label) {
+    var W = 100, gap = W * GAP, chars = equation.split('');
+    var width = chars.length * W + (chars.length - 1) * gap;
+    var parts = '', x = 0;
+    chars.forEach(function (ch) {
+      cell(ch, W).forEach(function (p) {
+        parts += '<rect x="' + (x + p[0]).toFixed(1) + '" y="' + p[1].toFixed(1) +
+          '" width="' + p[2].toFixed(1) + '" height="' + p[3].toFixed(1) +
+          '" rx="' + (W * THICK * RX).toFixed(1) + '" class="' +
+          (p[4] ? 'lit' : 'unlit') + '"/>';
+      });
+      x += W + gap;
+    });
+    return '<svg viewBox="0 0 ' + width + ' ' + (W * 2) + '" role="img" ' +
+      'aria-label="' + label + '">' + parts + '</svg>';
+  }
+
   var now = new Date();
   var days = Math.round(
     (Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(2026, 0, 1))
@@ -67,9 +149,11 @@
     if (!pool || !pool.length) return;
     var puzzle = pool[((days % pool.length) + pool.length) % pool.length];
     var chip = document.getElementById('daily-difficulty');
-    document.getElementById('daily-equation').textContent = puzzle.equation;
-    document.getElementById('daily-moves').textContent =
-      'Move ' + puzzle.moves + (puzzle.moves === 1 ? ' stick' : ' sticks') + ' to fix it';
+    var moves = 'Move ' + puzzle.moves +
+      (puzzle.moves === 1 ? ' stick' : ' sticks') + ' to fix it';
+    document.getElementById('daily-equation').innerHTML =
+      board(puzzle.equation, puzzle.equation.split('').join(' ') + ' — ' + moves);
+    document.getElementById('daily-moves').textContent = moves;
     chip.textContent = puzzle.difficulty;
     chip.style.background = {'easy':'#1E7B3C','medium':'#C25714','hard':'#B8211A','expert':'#40268C','master':'#7340A6'}[puzzle.difficulty] || chip.style.background;
     document.getElementById('daily').className = 'card daily';

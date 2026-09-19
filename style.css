@@ -6,6 +6,9 @@
   --body: #3B2917;
   --muted: #6B5334;
   --accent: #C25714;
+  /* Theme.segmentColor in the app's light/Ceramic mode — the stick the puzzle
+     is drawn with, which the daily board below reuses verbatim. */
+  --stick: #8F3B0D;
   --card: rgba(255, 252, 240, 0.88);
   --border: rgba(115, 77, 41, 0.28);
 }
@@ -21,15 +24,20 @@ body {
 }
 main { max-width: 680px; margin: 0 auto; }
 a { color: var(--accent); }
-a.home {
-  display: inline-flex; align-items: center; gap: 10px;
-  text-decoration: none; color: var(--ink);
-  font-weight: 800; letter-spacing: 0.4px; margin-bottom: 28px;
-}
+/* Every page carries the same centred lockup, so on the legal pages the lockup
+   is made a link back to the landing page — the mark is the way home. */
+a.lockup-link { display: block; text-decoration: none; color: inherit; }
+
 .mark { display: block; }
-h1 { font-size: 30px; letter-spacing: -0.3px; margin: 0 0 6px; }
-h2 { font-size: 20px; margin: 34px 0 10px; }
-h3 { font-size: 17px; margin: 26px 0 8px; }
+/* One type scale, anchored to the 24 px brand line in the lockup and the 16 px
+   body: 22 page title, 18 section, 16 subsection, 14 supporting, 13 meta, 12 and
+   10 for the tracked kickers. Every heading stays inside the brand's size, so
+   nothing on a page out-shouts the identity block above it — and the steps are
+   3 px apart rather than the old 30/20/17, where a subsection sat 1 px off body
+   text while the page title towered over the mark. */
+h1 { font-size: 22px; letter-spacing: -0.2px; margin: 0 0 6px; }
+h2 { font-size: 18px; margin: 30px 0 8px; }
+h3 { font-size: 16px; font-weight: 800; margin: 22px 0 6px; }
 p, li { color: var(--body); }
 ul { padding-left: 22px; }
 li { margin-bottom: 7px; }
@@ -37,8 +45,21 @@ li { margin-bottom: 7px; }
 .card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: 16px; padding: 20px; margin: 26px 0;
+  /* Panel copy is the same 14 px as the hero's lede, so the intro paragraph and
+     the cards below it agree. The kickers, chips and headings inside a card set
+     their own sizes, so this only moves the prose. */
+  font-size: 14px;
 }
-.lede { font-size: 18px; }
+/* A card's outermost children drop their outside margin so its padding *is* the
+   gap: h2's 30 px top margin inside a 20 px card was opening a hole above the
+   first heading that nothing filled. */
+.card > :first-child { margin-top: 0; }
+.card > :last-child { margin-bottom: 0; }
+/* …including a list's final item, whose own margin would otherwise push the
+   card's bottom edge out. Scoped to .card so it outranks the per-list rules
+   further down (.how li). */
+.card li:last-child { margin-bottom: 0; }
+.lede { font-size: 14px; }
 footer {
   margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--border);
   display: flex; flex-wrap: wrap; gap: 18px; font-size: 14px;
@@ -49,15 +70,65 @@ footer {
   text-transform: uppercase; letter-spacing: 0.16em;
   font-size: 12px; font-weight: 800; color: var(--accent); margin: 0 0 10px;
 }
-.hero-title { font-size: 46px; letter-spacing: -1px; margin: 0 0 4px; }
-.tagline { font-size: 19px; color: var(--muted); margin: 0 0 18px; }
+/* The hero repeats the game's own lockup, centred and stacked: the mark, then
+   ONE STICK, MATH CHALLENGE and the tagline. Everything but MATH CHALLENGE is
+   sized in em of it, so the whole stack scales from one font-size (the
+   narrow-phone rule below changes that single value). */
+.hero { text-align: center; }
+/* The stack is sized from the viewport height as well as capped in px: a short
+   browser window (a laptop window is often only ~570 px of viewport) would
+   otherwise give the hero the whole fold and push the preview out of sight. */
+.lockup {
+  display: flex; flex-direction: column; align-items: center; gap: 0.28em;
+  font-size: min(24px, 3vh); line-height: 1.1; margin: 2px 0 16px;
+}
+/* The mark's canvas is centred on its stick row, so it needs no optical offset. */
+.lockup .mark { height: 1.6em; width: auto; }
+/* letter-spacing adds its unit after the last character, which drags centred
+   text half a unit left; the matching half-unit indent recentres it. */
+.lockup-top {
+  font-size: 0.55em; font-weight: 800; letter-spacing: 0.35em;
+  text-transform: uppercase; color: var(--accent); margin: 0;
+  /* slightly more than half the tracking: the first glyph's left side bearing
+     eats into the compensation, and this is the widest tracking in the lockup */
+  text-indent: 0.25em;
+}
+.lockup-main {
+  font-size: 1em; font-weight: 900; letter-spacing: 0.01em;
+  text-transform: uppercase; color: var(--ink); margin: 0;
+  text-indent: 0.005em;
+}
+.lockup-tag {
+  font-size: 0.36em; font-weight: 800; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--muted); text-indent: 0.09em;
+  /* the two margins below are in the child's font-size, so they add to the gap */
+  margin: 0.35em 0 0;
+}
+/* A hairline rule closes the lockup before the platform line, in the same 1px
+   --border the cards and footer use. Sized in em of the lockup, so it scales
+   with the stack like everything above it. */
+.lockup-rule {
+  width: 3.4em; height: 1px; border-radius: 999px;
+  background: var(--border); margin-top: 0.55em;
+}
+/* The platform line is a supporting line, so it sits a touch under the title's
+   width (10 px + 0.1 em tracking lands within a few px of it) rather than
+   being the widest thing in the stack. Scoped to .lockup, not .hero: the legal
+   pages carry the same lockup without a .hero around it, and they must not fall
+   back to the larger generic .eyebrow the daily card uses. */
+.lockup .eyebrow {
+  margin: 0.8em 0 0; font-size: 10px; letter-spacing: 0.1em;
+  text-indent: 0.05em; line-height: 1.1;
+}
+.hero .lede { max-width: 38em; margin: 12px auto; }
+.hero .meta { margin: 10px 0 0; font-size: 12px; }
 .button {
   display: inline-flex; align-items: center; gap: 10px;
   background: var(--accent); color: #FFFCF0; text-decoration: none;
-  font-weight: 800; font-size: 17px; padding: 15px 26px; border-radius: 999px;
+  font-weight: 800; font-size: 14px; padding: 12px 22px; border-radius: 999px;
   box-shadow: 0 10px 24px rgba(194, 87, 20, 0.28);
 }
-.button.small { font-size: 15px; padding: 12px 20px; }
+.button.small { font-size: 13px; padding: 10px 18px; }
 .meta { font-size: 13px; color: var(--muted); margin: 14px 0 0; }
 .preview { display: flex; flex-direction: column; align-items: center; margin: 34px 0 4px; }
 /* Sized from the viewport height, not the width: the capture is 886 x 1920, so a
@@ -81,10 +152,15 @@ footer {
   border: 1px solid var(--border); box-shadow: 0 12px 28px rgba(60, 34, 10, 0.14);
 }
 .daily.hidden { display: none; }
-.daily-equation {
-  font: 800 40px/1.15 ui-monospace, "SF Mono", Menlo, monospace;
-  letter-spacing: 2px; color: var(--ink); margin: 6px 0 12px;
-}
+/* The daily equation is drawn the way the game draws it: the same seven-segment
+   sticks, from SegmentGeometry.swift. Lit sticks take the app's stick color and
+   the empty slots the ink at 16%, exactly as SegmentStick renders them, so the
+   card reads like the puzzle screen. The board is an SVG in cell units, so it
+   scales to the card without measuring anything. */
+.daily-board { margin: 12px 0 14px; }
+.daily-board svg { display: block; width: 100%; max-width: 380px; height: auto; margin: 0 auto; }
+.daily-board .lit { fill: var(--stick); }
+.daily-board .unlit { fill: rgba(44, 29, 15, 0.16); }
 .chip {
   display: inline-block; font-size: 11px; font-weight: 900; letter-spacing: 0.12em;
   text-transform: uppercase; color: #FFFCF0; padding: 6px 12px;
@@ -93,7 +169,10 @@ footer {
 .how li { margin-bottom: 10px; }
 .note { font-size: 13px; color: var(--muted); }
 @media (max-width: 520px) {
-  .hero-title { font-size: 38px; }
-  .daily-equation { font-size: 30px; }
+  .lockup { font-size: 20px; }
+  /* The brand line drops to 20 px on a narrow screen, so the page title follows
+     it down: a 22 px title over a 20 px lockup was the same out-of-scale the
+     desktop rules just fixed. */
+  h1 { font-size: 20px; }
   .shots { gap: 8px; }
 }
